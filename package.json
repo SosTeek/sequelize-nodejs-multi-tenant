@@ -1,0 +1,36 @@
+{
+  "name": "service-multi-tenant",
+  "version": "1.0.0",
+  "description": "multi tenant service ",
+  "main": "server.ts",
+  "scripts": {
+    "clean": "rm -rf ./dist",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "start": "node dist/server.js",
+    "start:dev": "nodemon --exec ts-node --type-check src/server.ts",
+    "start:watch": "nodemon --ignore dist/server.js"
+  },
+  "author": "Swastik Pandey",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.7.0",
+    "@apollo/subgraph": "^2.4.2",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "graphql": "^16.6.0",
+    "graphql-tag": "^2.12.6",
+    "joi": "^17.11.0",
+    "pg": "^8.11.3",
+    "sequelize": "^6.35.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/node": "^18.16.1",
+    "nodemon": "^2.0.22",
+    "rimraf": "^5.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}
