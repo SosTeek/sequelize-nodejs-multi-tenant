@@ -77,3 +77,34 @@ Workspace.init(
     ],
   }
 );
+
+/*****
+
+db_database: {
+  type: Sequelize.STRING,
+},
+db_username: {
+  type: Sequelize.STRING,
+},
+db_password: {
+  type: Sequelize.STRING(25),
+},
+db_host: {
+  type: Sequelize.STRING,
+  allowNull: false,
+},
+db_port: {
+  type: Sequelize.INTEGER,
+  allowNull: false,
+},
+db_dialect {
+  // defaultValue: 'postgres'
+}
+db_dialect_options {
+  // JSONB
+}
+db_logging {
+  defaultValue: false
+}
+
+ */

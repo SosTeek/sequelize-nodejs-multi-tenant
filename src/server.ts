@@ -35,6 +35,24 @@ class Server {
     this.connectDB();
   }
 
+  private unhandledRejectionProcess() {
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('Unhandled Promise Rejection at:', promise, 'reason:', reason);
+
+      // Optionally, you can log the error, send alerts, or perform cleanup before exiting
+      // process.exit(1);
+    });
+  }
+
+  private uncaughtExceptionProcess() {
+    process.on('uncaughtException', (error) => {
+      console.error('Uncaught Exception:', error);
+      // Optionally, you can log the error, send alerts, or perform cleanup before exiting
+      // process.exit(1);
+    });
+  }
+
+
   public async start() {
     this.configuration();
     this.logger.setLevel(
@@ -42,6 +60,9 @@ class Server {
         ? loglevel.levels.INFO
         : loglevel.levels.DEBUG
     );
+
+    this.unhandledRejectionProcess(); // Set up the unhandledRejection listener
+    this.uncaughtExceptionProcess();
 
     const httpServer = http.createServer(this.expressApp);
 
@@ -90,9 +111,10 @@ class Server {
           const secret = req.headers?.['x-workspace-secret-id'] as string;
     
           let workspace: WorkspaceInterface | undefined, user: UserInterface | undefined, sequelize: Sequelize | undefined
-          if (secret) {
+          if (secret) {  // worksapce:secret {workspaceVal}
             workspace = await Guard.checkWorkspace(secret);
             sequelize = await Tenant.connectTenantDB(req, res);
+            // console.log(sequelize?.config.database)
           }
           if (token) {
             // user = await Guard.auth(token.replace('Bearer ', ''), workspace);

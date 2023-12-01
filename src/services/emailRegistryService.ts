@@ -9,10 +9,13 @@ import {
   InputEmailRegistryInterface,
 } from '../interface';
 import { EmailRegistryRepository } from '../repositories';
+import EmailRegistryGroup from '../models/emailRegistryGroup';
 
 export class EmailRegistryService {
   private repository: EmailRegistryRepository;
+  private connection: Sequelize.Sequelize
   constructor(sequelize: Sequelize.Sequelize) {
+    this.connection = sequelize;
     this.repository = new EmailRegistryRepository(sequelize);
   }
 
@@ -105,6 +108,12 @@ export class EmailRegistryService {
         where: { ...cursorWhere, ...where },
         limit,
         order: orderItem,
+        include: [
+          {
+            model: EmailRegistryGroup(this.connection),
+            as: 'emailRegistryGroups'
+          }
+        ]
       }),
     ]);
 

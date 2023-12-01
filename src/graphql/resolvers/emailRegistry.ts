@@ -19,16 +19,26 @@ export const emailRegistryResolvers : any = {
       contextValue: ContextInterface,
       info: InformationEvent
     ) => {
-      const workspace = Guard.grantWorkspace(contextValue.workspace);
-      const sequelize = contextValue.sequelize
-      Validator.check(createEmailRegistry, args.input);
-      args.input.workspaceId = workspace.id;
-      const data = await new EmailRegistryService(sequelize!).create(args.input);
 
-      return SuccessResponse.send({
-        message: 'Email registry is successfully created.',
-        data: data,
-      });
+      try {
+        const workspace = Guard.grantWorkspace(contextValue.workspace);
+        const sequelize = contextValue.sequelize
+        Validator.check(createEmailRegistry, args.input);
+        args.input.workspaceId = workspace.id;
+        const data = await new EmailRegistryService(sequelize!).create(args.input);
+  
+        return SuccessResponse.send({
+          message: 'Email registry is successfully created.',
+          data: data,
+        });
+      } catch (error) {
+        return error
+      } finally {
+        // contextValue.sequelize?.close()
+        if (contextValue.sequelize) {
+          // contextValue.sequelize.();
+        }
+      }
     },
     updateEmailRegistry: async (
       parent: ParentNode,
