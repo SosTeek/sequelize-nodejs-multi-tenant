@@ -1,24 +1,32 @@
 import 'colors';
-import { ApolloServer, BaseContext } from "@apollo/server";
-import { ApolloServerErrorCode } from "@apollo/server/errors";
-import { expressMiddleware } from "@apollo/server/express4";
-import { ApolloServerPluginCacheControl } from "@apollo/server/plugin/cacheControl";
-import { ApolloServerPluginLandingPageDisabled } from "@apollo/server/plugin/disabled";
-import { ApolloServerPluginInlineTrace } from "@apollo/server/plugin/inlineTrace";
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
-import bodyParser from "body-parser";
-import cors from "cors";
-import express from "express";
-import loglevel from "loglevel";
-import { GraphQLFormattedError } from "graphql";
-import http, { IncomingMessage } from "http";
-import { configs } from "./config";
-import { schema } from "./graphql/schema";
-import { EnvironmentEnum } from "./enums";
-import { ContextInterface, UserInterface, WorkspaceInterface } from './interface';
-import { Sequelize } from 'sequelize';
+import { ApolloServer, BaseContext } from '@apollo/server';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
+import { ApolloServerPluginInlineTrace } from '@apollo/server/plugin/inlineTrace';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
+import loglevel from 'loglevel';
+import { GraphQLFormattedError } from 'graphql';
+import http from 'http';
+import { configs } from './config';
+import { schema } from './graphql/schema';
+import { EnvironmentEnum } from './enums';
+import {
+  ContextInterface,
+  ModelsInterface,
+  UserInterface,
+  WorkspaceInterface,
+} from './interface';
 import { Database } from './config';
 import { Tenant } from './config';
+// import EmailRegistry from './models/emailRegistry';
+// import model from "./models";
+
+// const { EmailRegistry } = model
 
 import { Guard } from './middlewares';
 
@@ -31,13 +39,18 @@ class Server {
 
   constructor() {
     this.expressApp = express();
-    this.logger = loglevel.getLogger("apollo-server");
+    this.logger = loglevel.getLogger('apollo-server');
     this.connectDB();
   }
 
   private unhandledRejectionProcess() {
     process.on('unhandledRejection', (reason, promise) => {
-      console.error('Unhandled Promise Rejection at:', promise, 'reason:', reason);
+      console.error(
+        'Unhandled Promise Rejection at:',
+        promise,
+        'reason:',
+        reason
+      );
 
       // Optionally, you can log the error, send alerts, or perform cleanup before exiting
       // process.exit(1);
@@ -51,7 +64,6 @@ class Server {
       // process.exit(1);
     });
   }
-
 
   public async start() {
     this.configuration();
@@ -71,7 +83,7 @@ class Server {
       introspection: true,
       csrfPrevention: false,
       includeStacktraceInErrorResponses: true,
-      cache: "bounded",
+      cache: 'bounded',
       formatError: (formattedError: GraphQLFormattedError) => {
         if (
           formattedError.extensions?.code ===
@@ -102,29 +114,38 @@ class Server {
     await server.start();
 
     this.expressApp.use(
-      "/graphql",
+      '/graphql',
       cors<cors.CorsRequest>({ origin: 'localhost:3000' }),
       bodyParser.json(),
       expressMiddleware(server, {
-        context: async ({ req, res }: { req: express.Request, res: express.Response }): Promise<ContextInterface> => {
+        context: async ({
+          req,
+          res,
+        }: {
+          req: express.Request;
+          res: express.Response;
+        }): Promise<ContextInterface> => {
           const token = req.headers.authorization as string;
           const secret = req.headers?.['x-workspace-secret-id'] as string;
-    
-          let workspace: WorkspaceInterface | undefined, user: UserInterface | undefined, sequelize: Sequelize | undefined
-          if (secret) {  // worksapce:secret {workspaceVal}
+
+          let workspace: WorkspaceInterface | undefined,
+            user: UserInterface | undefined,
+            models: ModelsInterface | undefined;
+          if (secret) {
+            // worksapce:secret {workspaceVal}
             workspace = await Guard.checkWorkspace(secret);
-            sequelize = await Tenant.connectTenantDB(req, res);
+            models = await Tenant.connectTenantDB(workspace);
             // console.log(sequelize?.config.database)
           }
           if (token) {
             // user = await Guard.auth(token.replace('Bearer ', ''), workspace);
           }
-    
+
           return {
             workspace,
             user,
             token,
-            sequelize
+            models,
           };
         },
       })
@@ -134,17 +155,22 @@ class Server {
     this.expressApp.use(bodyParser.urlencoded({ extended: true }));
 
     await new Promise<void>((resolve) => {
-      const port = this.expressApp.get("port");
+      const port = this.expressApp.get('port');
       httpServer.listen({ port: port }, resolve);
-      console.log('🚀 Apollo server running at'.blue, `http://localhost:${this.expressApp.get('port')}/graphql`.blue.bold);
+      console.log(
+        '🚀 Apollo server running at'.blue,
+        `http://localhost:${this.expressApp.get('port')}/graphql`.blue.bold
+      );
     });
   }
 
   private configuration(): void {
-    this.expressApp.set("port", configs.port);
+    this.expressApp.set('port', configs.port);
   }
 }
 
 const server = new Server();
 
-server.start().catch(error => { console.log('ROOT ERROR', error) });
+server.start().catch((error) => {
+  console.log('ROOT ERROR', error);
+});

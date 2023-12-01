@@ -7,16 +7,16 @@ import {
   ArgsEmailRegistryInterface,
   EmailRegistryInterface,
   InputEmailRegistryInterface,
+  ModelsInterface,
 } from '../interface';
 import { EmailRegistryRepository } from '../repositories';
-import EmailRegistryGroup from '../models/emailRegistryGroup';
 
 export class EmailRegistryService {
   private repository: EmailRegistryRepository;
-  private connection: Sequelize.Sequelize
-  constructor(sequelize: Sequelize.Sequelize) {
-    this.connection = sequelize;
-    this.repository = new EmailRegistryRepository(sequelize);
+  private models: ModelsInterface
+  constructor(models: ModelsInterface) {
+    this.models = models;
+    this.repository = new EmailRegistryRepository(this.models);
   }
 
   async create(
@@ -110,7 +110,7 @@ export class EmailRegistryService {
         order: orderItem,
         include: [
           {
-            model: EmailRegistryGroup(this.connection),
+            model: this.models.EmailRegistryGroup,
             as: 'emailRegistryGroups'
           }
         ]
@@ -121,7 +121,18 @@ export class EmailRegistryService {
   }
 
   async findByPk(id: number): Promise<EmailRegistryInterface> {
-    const emailRegistryExists = await this.repository.findByPk(id);
+    const emailRegistryExists = await this.repository.findByPk(id, {
+      include: [
+        {
+          model: this.models.EmailRegistryEmailRegistryGroup,
+          as: 'emailRegistryEmailRegistryGroups'
+        },
+        {
+          model: this.models.EmailRegistryGroup,
+          as: 'emailRegistryGroups'
+        }
+      ]
+    });
     if (!emailRegistryExists)
       throw new Error(`Email registry: ${id} does not exist!`);
     return emailRegistryExists;

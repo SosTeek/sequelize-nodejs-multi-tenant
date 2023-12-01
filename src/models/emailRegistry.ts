@@ -1,10 +1,8 @@
 import * as Sequelize from 'sequelize';
 import { EmailRegistryModelInterface } from '../interface';
-import EmailRegistryGroup from './emailRegistryGroup';
-import EmailRegistryEmailRegistryGroup from './emailRegistryEmailRegistryGroup';
 
-const EmailRegistry = (sequelize: Sequelize.Sequelize) => {
-  const EmailRegistryModel = sequelize.define<EmailRegistryModelInterface>(
+export default (sequelize: Sequelize.Sequelize) => {
+  const EmailRegistry = sequelize.define<EmailRegistryModelInterface>(
     'email_registries',
     {
       id: {
@@ -56,21 +54,8 @@ const EmailRegistry = (sequelize: Sequelize.Sequelize) => {
           },
         },
       ],
-    },
+    }
   );
-
-  EmailRegistryModel.belongsToMany(EmailRegistryGroup(sequelize), {
-    through: { model: EmailRegistryEmailRegistryGroup(sequelize) },
-    as: 'emailRegistryGroups',
-    foreignKey: 'emailRegistryId',
-    otherKey: 'emailRegistryGroupId',
-  });
-
-  EmailRegistryModel.hasMany(EmailRegistryEmailRegistryGroup(sequelize), {
-    foreignKey: 'emailRegistryId',
-    as: 'emailRegistryEmailRegistryGroups',
-  });
-  return EmailRegistryModel;
+  
+  return EmailRegistry;
 };
-
-export default EmailRegistry;

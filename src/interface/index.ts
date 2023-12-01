@@ -6,3 +6,4 @@ export * from './modelExtendInterface';
 export * from './paginationInterface';
 export * from './emailRegistryEmailRegistryGroupInterface';
 export * from './emailRegistryGroupInterface';
+export * from './modelsInterface';

@@ -39,3 +39,4 @@ defaultCursor: string = 'id';
 
 export * from './instance';
 export * from './tenantConnectionManager';
+export * from './tenantInstance';
